@@ -33,7 +33,7 @@ function Get-OnlyUsedTesla {
         $page = Invoke-WebRequest -uri $url -body $body
     }
     catch {
-        Write-Warning "Could not find $s" 
+        Write-Warning "Could not download from $Url" 
         break
     }
 
@@ -47,17 +47,34 @@ function Get-OnlyUsedTesla {
         $carpage = $null
         $car = $_
         $linktoCarPage = Invoke-WebRequest $car.SelectSingleNode(".//a").Attributes["href"].Value
+        $link = $car.SelectSingleNode(".//a").Attributes["href"].Value
         $carpage = ConvertFrom-Html $linktoCarPage.rawContent
         $location = $car.Descendants().Where( { $_.InnerText -match "location" -and $_.Name -eq "li" }).Innertext -replace "Location"
         $state = ($location -split ",")[1]
+        $Year = $carpage.Descendants().Where( { $_.InnerText -match "Year" -and $_.Name -eq "li" }).Innertext -replace "Year"
+        $battery = $carpage.Descendants().Where( { $_.InnerText -match "Battery" -and $_.Name -eq "li" }).Innertext -replace "Battery"
+        switch -Regex ($Battery) {
+            "RWD" {  
+                $zeroto60 = "5.0"
+            }
+            "AWD" {
+                $zeroto60 = "4.4"
+            }
+            Default {
+
+            }
+        }
+
         if ($state -match $Locations) {
             [PSCustomObject]@{
                 AskingPrice = "{0:C2}" -f (([int](($car.Descendants().where{ $_.HasClass("asking-price") -eq "True" }).InnerText -replace '\D+(\d+)', '$1'))/100)
                 Miles       = [int32](($car.Descendants().Where( { $_.InnerText -match "mileage" -and $_.Name -eq "li" })).InnerText -replace "\D")
-                Battery     = $carpage.Descendants().Where( { $_.InnerText -match "Battery" -and $_.Name -eq "li" }).Innertext -replace "Battery"
-                Location    = $car.Descendants().Where( { $_.InnerText -match "location" -and $_.Name -eq "li" }).Innertext -replace "Location"
+                Battery     = $battery
+                Location    = $location
+                ZeroTo60    = $zeroto60
                 Date        = Get-Date ($car.Descendants().Where( { $_.InnerText -match "Listing Date" -and $_.Name -eq "li" }).Innertext -replace "Listing Date").Trim()
-                Link        = $car.SelectSingleNode(".//a").Attributes["href"].Value
+                Year        = $year
+                Link        = $link
                 #VIN         = $carpage.Descendants().Where( { $_.InnerText -match "VIN" -and $_.Name -eq "li" }).Innertext -replace "VIN #"
                 Color       = $carpage.Descendants().Where( { $_.InnerText -match "Color" -and $_.Name -eq "li" }).Innertext -replace "Color"
                 AutoPilot   = ($carpage.Descendants().Where( { $_.InnerText -match "AutoPilot" -and $_.Name -eq "li" }).Innertext -replace "AutoPilot").Trim()
