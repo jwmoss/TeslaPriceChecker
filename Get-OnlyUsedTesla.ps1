@@ -12,7 +12,7 @@ function Get-OnlyUsedTesla {
     $body = @{
         "_sft_model"            = "model-3"
         "_sft_listing_type"     = "for-sale"
-        "_sfm_out_asking_price" = "517+60202"
+        "_sfm_out_asking_price" = "517+41000"
     }
 
     switch ($type) {
