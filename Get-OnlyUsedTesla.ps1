@@ -7,18 +7,28 @@ function Get-OnlyUsedTesla {
         $Type
     )
     
+    $url = "https://onlyusedtesla.com/listings/?"
+
+    $body = @{
+        "_sft_model"            = "model-3"
+        "_sft_listing_type"     = "for-sale"
+        "_sfm_out_asking_price" = "517+60202"
+    }
+
     switch ($type) {
         "AWD" {
-            
+            $body.Add("_sft_battery","long-range-awd")
         }
         "RWD" {
+            $body.Add("_sft_battery","long-range-rwd")
+        }
+        Default { 
 
         }
-        Default { }
     }
 
     try {
-        $page = Invoke-WebRequest -Uri "https://onlyusedtesla.com/listings/?_sft_model=model-3&_sft_listing_type=for-sale&_sft_battery=long-range-awd&_sfm_out_asking_price=517+60202" -ErrorAction "stop"
+        $page = Invoke-WebRequest -uri $url -body $body
     }
     catch {
         Write-Warning "Could not find $s" 
@@ -45,7 +55,7 @@ function Get-OnlyUsedTesla {
             Link        = $car.SelectSingleNode(".//a").Attributes["href"].Value
             #VIN         = $carpage.Descendants().Where( { $_.InnerText -match "VIN" -and $_.Name -eq "li" }).Innertext -replace "VIN #"
             Color       = $carpage.Descendants().Where( { $_.InnerText -match "Color" -and $_.Name -eq "li" }).Innertext -replace "Color"
-            AutoPilot   = $carpage.Descendants().Where( { $_.InnerText -match "AutoPilot" -and $_.Name -eq "li" }).Innertext -replace "AutoPilot"
+            AutoPilot   = ($carpage.Descendants().Where( { $_.InnerText -match "AutoPilot" -and $_.Name -eq "li" }).Innertext -replace "AutoPilot").Trim()
         }
         
     }
