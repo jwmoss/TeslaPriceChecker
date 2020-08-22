@@ -1,3 +1,16 @@
+function Get-LoanAmount {
+    [CmdletBinding()]
+    param (
+        [int32]
+        $price
+    )   
+    
+    process {
+        [int32]([Microsoft.VisualBasic.Financial]::Pmt(0.002075, 84, -$price, 0, 0))
+    }
+    
+}
+
 function Get-OnlyUsedTesla {
     [CmdletBinding()]
     param (
@@ -53,6 +66,8 @@ function Get-OnlyUsedTesla {
         $state = ($location -split ",")[1]
         $Year = $carpage.Descendants().Where( { $_.InnerText -match "Year" -and $_.Name -eq "li" }).Innertext -replace "Year"
         $battery = $carpage.Descendants().Where( { $_.InnerText -match "Battery" -and $_.Name -eq "li" }).Innertext -replace "Battery"
+        $price = "{0:C2}" -f (([int](($car.Descendants().where{ $_.HasClass("asking-price") -eq "True" }).InnerText -replace '\D+(\d+)', '$1'))/100)
+        $pricecalc = (([int32](($car.Descendants().where{ $_.HasClass("asking-price") -eq "True" }).InnerText -replace '\D+(\d+)', '$1'))/100)
         switch -Regex ($Battery) {
             "RWD" {  
                 $zeroto60 = "5.0"
@@ -67,7 +82,8 @@ function Get-OnlyUsedTesla {
 
         if ($state -match $Locations) {
             [PSCustomObject]@{
-                AskingPrice = "{0:C2}" -f (([int](($car.Descendants().where{ $_.HasClass("asking-price") -eq "True" }).InnerText -replace '\D+(\d+)', '$1'))/100)
+                AskingPrice = $price
+                Monthly     = Get-LoanAmount -Price $pricecalc
                 Miles       = [int32](($car.Descendants().Where( { $_.InnerText -match "mileage" -and $_.Name -eq "li" })).InnerText -replace "\D")
                 Battery     = $battery
                 Location    = $location
