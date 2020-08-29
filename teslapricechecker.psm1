@@ -2,7 +2,7 @@ function Get-LoanAmount {
     [CmdletBinding()]
     param (
         [int32]
-        $price
+        $Price
     )   
     
     process {
