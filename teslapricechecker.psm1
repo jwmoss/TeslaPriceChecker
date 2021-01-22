@@ -6,15 +6,19 @@ function Get-LoanAmount {
     )   
     
     process {
-        $price2 = $price - 2000
-        $Deposit = [int32]([Microsoft.VisualBasic.Financial]::Pmt(0.001999, 84, - $price2, 0, 0))
-        $NoDeposit = [int32]([Microsoft.VisualBasic.Financial]::Pmt(0.001999, 84, - $price, 0, 0))
+        $2k = $price - 2000
+        $4k = $price - 4000
+        
+        $2kfinal = [int32]([Microsoft.VisualBasic.Financial]::Pmt(0.001999, 84, - $2k, 0, 0))
+        $4kfinal = [int32]([Microsoft.VisualBasic.Financial]::Pmt(0.001999, 84, - $4k, 0, 0))
 
         [PSCustomObject]@{
-            Monthly = $NoDeposit * 1.03
-            MonthlyWithInsurance = ($NoDeposit * 1.03) + 50
-            MonthlyWithDeposit = $Deposit * 1.03
-            MonthlyWithDepositInsurance = ($Deposit * 1.03)  + 50
+            Monthly = [int32]([Microsoft.VisualBasic.Financial]::Pmt(0.001999, 84, - $price, 0, 0)) * 1.03
+            MonthlyInsurance = ([int32]([Microsoft.VisualBasic.Financial]::Pmt(0.001999, 84, - $price, 0, 0)) * 1.03) + 50
+            Monthly2K = $2kfinal * 1.03
+            Monthly2KInsurance = ($2kfinal * 1.03)  + 50
+            Monthly4K = $4kfinal * 1.03
+            Monthly4KInsurance = ($4kfinal * 1.03)  + 50
         }
     }
 }
